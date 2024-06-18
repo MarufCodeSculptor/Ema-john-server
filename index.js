@@ -24,21 +24,24 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-
-   
-
     const productCollection = client.db('emaJohnDB').collection('products');
 
     app.get('/products', async (req, res) => {
-      const result = await productCollection.find().toArray();
+      const page = parseInt(req.query.page);
+      const perPage=parseInt(req.query.size)
+      const skipValue= (page-1)*perPage;
+
+      const result = await productCollection.find().skip(skipValue).limit(perPage).toArray();
+      console.log(result);
+
       res.send(result);
     });
-// getting products count from here => 
-  app.get('/productsCount',async (req,res)=>{
-    const count = await productCollection.estimatedDocumentCount();
-    console.log(count);
-    res.send({count});
-  })
+    // getting products count from here =>
+    app.get('/productsCount', async (req, res) => {
+      const count = await productCollection.estimatedDocumentCount();
+      console.log(count);
+      res.send({ count });
+    });
     // Send a ping to confirm a successful connection
     await client.db('admin').command({ ping: 1 });
     console.log(
